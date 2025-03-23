@@ -46,54 +46,17 @@ const loginUser = async (req, res) => {
   }
 };
 
-// Obtener todos los usuarios (solo para administradores)
+// Obtener todos los usuarios
 const getUsuarios = async (req, res) => {
   try {
-    const usuarios = await Usuario.find({}, { password: 0 }); // Excluir la contraseña
+    const usuarios = await Usuario.find({}, { password: 0 });
     res.json(usuarios);
   } catch (error) {
     res.status(500).json({ error: "Error al obtener los usuarios" });
   }
 };
 
-// Actualizar un usuario (solo para administradores)
-const updateUsuario = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { nombre, ap, am, username, email, telefono, preguntaSecreta, respuestaSecreta, rol } = req.body;
-
-    // Buscar el usuario por ID
-    const usuario = await Usuario.findById(id);
-    if (!usuario) {
-      return res.status(404).json({ error: "Usuario no encontrado" });
-    }
-
-    // Actualizar los campos del usuario
-    usuario.nombre = nombre || usuario.nombre;
-    usuario.ap = ap || usuario.ap;
-    usuario.am = am || usuario.am;
-    usuario.username = username || usuario.username;
-    usuario.email = email || usuario.email;
-    usuario.telefono = telefono || usuario.telefono;
-    usuario.preguntaSecreta = preguntaSecreta || usuario.preguntaSecreta;
-    usuario.respuestaSecreta = respuestaSecreta || usuario.respuestaSecreta;
-    usuario.rol = rol || usuario.rol;
-
-    // Guardar los cambios
-    await usuario.save();
-
-    // Excluir la contraseña en la respuesta
-    const usuarioActualizado = usuario.toObject();
-    delete usuarioActualizado.password;
-
-    res.status(200).json({ mensaje: "Usuario actualizado con éxito", usuario: usuarioActualizado });
-  } catch (error) {
-    console.error("Error al actualizar el usuario:", error);
-    res.status(500).json({ error: "Error al actualizar el usuario" });
-  }
-};
-
-// Actualizar el rol de un usuario (solo para administradores)
+// Actualizar el rol de un usuario
 const updateRol = async (req, res) => {
   try {
     const { id } = req.params;
@@ -115,7 +78,7 @@ const updateRol = async (req, res) => {
   }
 };
 
-// Eliminar un usuario (solo para administradores)
+// Eliminar un usuario
 const deleteUsuario = async (req, res) => {
   try {
     const { id } = req.params;
@@ -126,4 +89,88 @@ const deleteUsuario = async (req, res) => {
   }
 };
 
-module.exports = { registerUser, loginUser, getUsuarios, updateUsuario, updateRol, deleteUsuario };
+// Verificar correo
+const verificarCorreo = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const usuario = await Usuario.findOne({ email });
+
+    if (!usuario) {
+      return res.status(404).json({ error: "Correo no encontrado" });
+    }
+
+    res.json({ mensaje: "Correo válido", usuarioId: usuario._id });
+  } catch (error) {
+    res.status(500).json({ error: "Error al verificar el correo" });
+  }
+};
+
+// Obtener pregunta secreta
+const obtenerPregunta = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const usuario = await Usuario.findOne({ email }, { preguntaSecreta: 1 });
+
+    if (!usuario) {
+      return res.status(404).json({ error: "Correo no encontrado" });
+    }
+
+    res.json({ preguntaSecreta: usuario.preguntaSecreta });
+  } catch (error) {
+    res.status(500).json({ error: "Error al obtener la pregunta secreta" });
+  }
+};
+
+// Verificar respuesta secreta
+const verificarRespuesta = async (req, res) => {
+  try {
+    const { email, respuestaSecreta } = req.body;
+    const usuario = await Usuario.findOne({ email });
+
+    if (!usuario) {
+      return res.status(404).json({ error: "Correo no encontrado" });
+    }
+
+    if (usuario.respuestaSecreta !== respuestaSecreta) {
+      return res.status(400).json({ error: "Respuesta secreta incorrecta" });
+    }
+
+    res.json({ mensaje: "Respuesta válida" });
+  } catch (error) {
+    res.status(500).json({ error: "Error al verificar la respuesta secreta" });
+  }
+};
+
+// Cambiar contraseña
+const cambiarContrasena = async (req, res) => {
+  try {
+    const { email, nuevaContrasena } = req.body;
+    const hashedPassword = await bcrypt.hash(nuevaContrasena, 10);
+
+    const usuario = await Usuario.findOneAndUpdate(
+      { email },
+      { password: hashedPassword },
+      { new: true }
+    );
+
+    if (!usuario) {
+      return res.status(404).json({ error: "Correo no encontrado" });
+    }
+
+    res.json({ mensaje: "Contraseña actualizada con éxito" });
+  } catch (error) {
+    res.status(500).json({ error: "Error al cambiar la contraseña" });
+  }
+};
+
+module.exports = {
+  registerUser,
+  loginUser,
+  getUsuarios,
+  updateRol,
+  deleteUsuario,
+  verificarCorreo,
+  obtenerPregunta,
+  verificarRespuesta,
+  cambiarContrasena,
+};

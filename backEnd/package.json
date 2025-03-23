@@ -1,4 +1,13 @@
 {
+  "name": "lodearguelles",
+  "version": "1.0.0",
+  "main":"backEnd/Config/db.js",
+  "scripts": {
+    "start": "node backEnd/Config/db.js",
+    "dev": "nodemon backEnd/Config/db.js",
+    "build": "echo \"No build step needed for backend\"",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
   "dependencies": {
     "axios": "^1.8.2",
     "bcryptjs": "^3.0.2",
@@ -12,14 +21,8 @@
     "nodemon": "^3.1.9",
     "path": "^0.12.7"
   },
-  "name": "lodearguelles",
-  "version": "1.0.0",
-  "main": "db.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
+  "keywords": ["backend", "node", "express", "mongodb", "authentication"],
+  "author": "Elizabeth",
   "license": "ISC",
-  "description": ""
+  "description": "Backend para manejar usuarios, autenticación y conexión con MongoDB."
 }

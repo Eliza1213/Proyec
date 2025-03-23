@@ -69,6 +69,8 @@ app.post("/api/control", (req, res) => {
   res.status(200).json({ message: "Acción realizada con éxito." });
 });
 
+
+
 // Iniciar servidor
 app.listen(port, () => {
   console.log(`🚀 Servidor corriendo en http://localhost:${port}`);
